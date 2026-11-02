@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Painel Injetor | Smooth Engine v5.0</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              900: '#0c4a6e',
+              950: '#082f49'
+            }
+          },
+          animation: {
+            'gradient-x': 'gradient-x 3s linear infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            'gradient-x': {
+              '0%, 100%': { 'background-position': '0% 50%' },
+              '50%': { 'background-position': '100% 50%' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background-color: #000000;
+      color: #e2e8f0;
+      font-family: 'Outfit', sans-serif;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { bg-transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+    .scanline-effect::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent, rgba(56, 189, 248, 0.1), transparent);
+      animation: scanline 3s linear infinite;
+      pointer-events: none;
+    }
+
+    .neon-btn-glow {
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), 0 0 30px rgba(6, 182, 212, 0.2);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .neon-btn-glow:active {
+      transform: scale(0.96);
+      box-shadow: 0 0 5px rgba(6, 182, 212, 0.6);
+    }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-brand-500/30">
+
+  <!-- Background Atmosphere -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-900/10 rounded-full blur-[120px]"></div>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 transition-all duration-500">
+    <div class="w-full max-w-sm space-y-8 text-center animate-fade-up">
+      <div class="space-y-2">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 mb-4 shadow-[0_0_30px_rgba(14,165,233,0.15)]">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 6V11C4 16.55 7.84 21.74 12 23C16.16 21.74 20 16.55 20 11V6L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="10" width="6" height="5" rx="1" stroke="white" stroke-width="2"/><path d="M10 10V8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8V10" stroke="white" stroke-width="2"/></svg>
+        </div>
+        <h1 class="text-4xl font-extrabold tracking-tighter italic text-white">PAINEL INJETOR <span class="text-slate-600 not-italic text-base align-middle ml-2 font-mono font-normal">v5.0</span></h1>
+        <p class="text-slate-500 text-sm">Acesso restrito a usuários autorizados.</p>
+      </div>
+
+      <div class="space-y-4 bg-slate-900/30 p-8 rounded-3xl border border-slate-800 backdrop-blur-xl">
+        <div class="relative group">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-brand-400 transition-colors" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input id="loginInput" type="password" placeholder="Chave de Acesso" class="w-full bg-black border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500/50 focus:ring-1 focus:ring-brand-500/50 transition-all" />
+        </div>
+        <button onclick="handleLogin()" class="w-full bg-white text-black font-bold py-4 rounded-2xl active:scale-95 transition-all uppercase tracking-wide hover:bg-slate-200">Entrar no Sistema</button>
+      </div>
+      <p class="text-[10px] text-slate-700 font-mono">SECURE CONNECTION // ENCRYPTED</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="hidden relative z-10 min-h-screen p-4 pb-10 max-w-lg mx-auto">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-8 pt-4 animate-fade-up">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center border border-slate-800 shadow-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/><circle cx="12" cy="12" r="2" fill="white"/></svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-white tracking-tight leading-none">Painel Injetor</h2>
+          <span class="text-[10px] text-brand-400 font-mono">ONLINE // CONNECTED</span>
+        </div>
+      </div>
+      <div class="text-[9px] bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800 text-slate-400 font-mono flex items-center gap-2">
+        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+        SMOOTH ENGINE
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide animate-fade-up" style="animation-delay: 0.1s;">
+      <button onclick="switchTab('auxilio')" id="tab-auxilio" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+        Auxílio de Mira
+      </button>
+      <button onclick="switchTab('otimizacao')" id="tab-otimizacao" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+        Otimizações
+      </button>
+    </nav>
+
+    <!-- Content Container -->
+    <main class="bg-slate-900/20 border border-slate-800/50 rounded-[32px] p-5 shadow-2xl relative overflow-hidden backdrop-blur-sm animate-fade-up" style="animation-delay: 0.2s;">
+
+      <!-- TAB: AUXILIO -->
+      <div id="content-auxilio" class="space-y-4">
+        <div class="grid grid-cols-1 gap-3">
+
+          <!-- Aimbot Full HS -->
+          <div class="func-item flex items-center justify-between p-4 bg-black rounded-2xl border border-slate-800 transition-colors hover:border-slate-700">
+            <div class="flex items-center gap-4">
+              <div class="p-2.5 bg-slate-900 rounded-lg text-slate-400">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>
+              </div>
+              <div>
+                <p class="text-white font-semibold text-sm">Aimbot Full HS</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider">Gruda na cabeça em qualquer distância</p>
+              </div>
+            </div>
+            <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+          </div>
+
+          <!-- Zero Espalhamento -->
+          <div class="func-item flex items-center justify-between p-4 bg-black rounded-2xl border border-slate-800 transition-colors hover:border-slate-700">
+            <div class="flex items-center gap-4">
+              <div class="p-2.5 bg-slate-900 rounded-lg text-slate-400">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M5 12l3-3m-3 3l3 3"/><path d="M19 12l-3-3m3 3l-3 3"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+              </div>
+              <div>
+                <p class="text-white font-semibold text-sm">Zero Espalhamento</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider">Balas retas sem dispersão</p>
+              </div>
+            </div>
+            <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+          </div>
+
+          <!-- Zero Recuo -->
+          <div class="func-item flex items-center justify-between p-4 bg-black rounded-2xl border border-slate-800 transition-colors hover:border-slate-700">
+            <div class="flex items-center gap-4">
+              <div class="p-2.5 bg-slate-900 rounded-lg text-slate-400">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M8 12h8"/><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 12l4 4m-4-4l-4 4"/></svg>
+              </div>
+              <div>
+                <p class="text-white font-semibold text-sm">Zero Recuo</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider">Arma imóvel ao atirar</p>
+              </div>
+            </div>
+            <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+          </div>
+
+          <!-- Anti-Ban -->
+          <div class="func-item flex items-center justify-between p-4 bg-black rounded-2xl border border-slate-800 transition-colors hover:border-slate-700">
+            <div class="flex items-center gap-4">
+              <div class="p-2.5 bg-slate-900 rounded-lg text-slate-400">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+              </div>
+              <div>
+                <p class="text-white font-semibold text-sm">Anti-Ban</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider">Proteção de conta ativa</p>
+              </div>
+            </div>
+            <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+          </div>
+        </div>
+
+        <!-- Velocidade do Touch Premium -->
+        <div class="bg-black/40 p-5 rounded-2xl border border-slate-800 space-y-4 mt-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-slate-900 rounded-lg text-brand-400">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white uppercase">Velocidade do Touch Premium</p>
+                <p class="text-[10px] text-slate-500">Resposta tátil acelerada</p>
+              </div>
+            </div>
+            <button onclick="toggleTouchPremium(this)" id="btn-touch-premium" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+          </div>
+
+          <div id="touchSpeedOptions" class="hidden space-y-2 animate-fade-up">
+            <button onclick="selectTouchSpeed('baixa', this)" class="speed-option w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:border-brand-500/50 transition-all group">
+              <div class="flex items-center justify-between"><span class="text-xs font-bold text-white group-hover:text-brand-400 transition-colors">Baixa</span><span class="text-[9px] text-slate-500 font-mono">PRECISÃO CIRÚRGICA</span></div>
+              <p class="text-[10px] text-slate-500 mt-1">Toque mais lento e controlado. Ideal para snipers e tiros de longa distância.</p>
+            </button>
+            <button onclick="selectTouchSpeed('media', this)" class="speed-option w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:border-brand-500/50 transition-all group">
+              <div class="flex items-center justify-between"><span class="text-xs font-bold text-white group-hover:text-brand-400 transition-colors">Média</span><span class="text-[9px] text-slate-500 font-mono">EQUILÍBRIO TOTAL</span></div>
+              <p class="text-[10px] text-slate-500 mt-1">Balanço perfeito entre velocidade e controle. Recomendada para todos os modos.</p>
+            </button>
+            <button onclick="selectTouchSpeed('alta', this)" class="speed-option w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:border-brand-500/50 transition-all group">
+              <div class="flex items-center justify-between"><span class="text-xs font-bold text-white group-hover:text-brand-400 transition-colors">Alta</span><span class="text-[9px] text-slate-500 font-mono">RESPOSTA INSTANTÂNEA</span></div>
+              <p class="text-[10px] text-slate-500 mt-1">Toque ultra-rápido com zero atraso. Para combates próximos e movimentação agressiva.</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- BOTÃO PRINCIPAL ABRIR FREE FIRE -->
+        <div class="pt-4">
+          <button onclick="startInjection('normal')" class="neon-btn-glow relative w-full overflow-hidden rounded-2xl p-[1px]">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-600 animate-gradient-x"></div>
+            <div class="relative bg-black rounded-[15px] p-5 flex items-center justify-center gap-3 group-hover:bg-opacity-90 transition-colors">
+              <div class="p-2 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-full shadow-lg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4"/><path d="M15 11h.01m2 2h.01"/><path d="M22 6l-2-2m0 0l-2 2m2-2v6"/></svg>
+              </div>
+              <span class="text-white font-black text-lg uppercase tracking-tighter">Abrir Free Fire</span>
+            </div>
+          </button>
+          <p class="text-[9px] text-slate-600 text-center mt-2 font-mono">Tentativa de abertura direta via Intent Android.</p>
+        </div>
+
+      </div>
+
+      <!-- TAB: OTIMIZAÇÃO -->
+      <div id="content-otimizacao" class="hidden space-y-4">
+        <div class="bg-black p-6 rounded-3xl border border-slate-800 space-y-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2 bg-blue-900/20 rounded-lg text-brand-400">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <h3 class="text-white font-bold text-sm uppercase tracking-wide">Otimizações do Jogo</h3>
+          </div>
+
+          <div class="space-y-3">
+            <div class="opt-item flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="p-1.5 bg-slate-800 rounded text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                <div><span class="text-xs font-medium text-slate-200 block">Gráfico Saturado & Nitidez</span><span class="text-[10px] text-slate-500">Cores vivas e visuais aprimorados</span></div>
+              </div>
+              <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+            </div>
+
+            <div class="opt-item flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="p-1.5 bg-slate-800 rounded text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12l5-5m-5 5l5 5"/></svg></div>
+                <div><span class="text-xs font-medium text-slate-200 block">Limpeza de RAM Profunda</span><span class="text-[10px] text-slate-500">Elimina travamentos em lutas</span></div>
+              </div>
+              <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+            </div>
+
+            <div class="opt-item flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="p-1.5 bg-slate-800 rounded text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                <div><span class="text-xs font-medium text-slate-200 block">Renderização GPU Turbo</span><span class="text-[10px] text-slate-500">Força máxima da placa gráfica</span></div>
+              </div>
+              <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+            </div>
+
+            <div class="opt-item flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="p-1.5 bg-slate-800 rounded text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                <div><span class="text-xs font-medium text-slate-200 block">Reduzir Input Lag</span><span class="text-[10px] text-slate-500">Toque instantâneo no botão de tiro</span></div>
+              </div>
+              <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+            </div>
+
+            <div class="opt-item flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="p-1.5 bg-slate-800 rounded text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                <div><span class="text-xs font-medium text-slate-200 block">Estabilizador de FPS</span><span class="text-[10px] text-slate-500">FPS constante sem quedas bruscas</span></div>
+              </div>
+              <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+            </div>
+
+            <div class="opt-item flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="p-1.5 bg-slate-800 rounded text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+                <div><span class="text-xs font-medium text-slate-200 block">Cache Inteligente</span><span class="text-[10px] text-slate-500">Carregamento rápido de texturas</span></div>
+              </div>
+              <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+            </div>
+
+            <div class="opt-item flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="p-1.5 bg-slate-800 rounded text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg></div>
+                <div><span class="text-xs font-medium text-slate-200 block">Controle Térmico</span><span class="text-[10px] text-slate-500">Evita throttling e perda de desempenho</span></div>
+              </div>
+              <button onclick="toggleSwitch(this)" class="switch-btn w-10 h-5 bg-slate-700 rounded-full relative transition-colors"><div class="knob absolute left-1 top-1 w-3 h-3 bg-slate-400 rounded-full transition-all"></div></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTÃO PRINCIPAL ABRIR FF MAX -->
+        <div class="pt-4">
+          <button onclick="startInjection('max')" class="neon-btn-glow relative w-full overflow-hidden rounded-2xl p-[1px]">
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-600 via-fuchsia-400 to-purple-600 animate-gradient-x"></div>
+            <div class="relative bg-black rounded-[15px] p-5 flex items-center justify-center gap-3 group-hover:bg-opacity-90 transition-colors">
+              <div class="p-2 bg-gradient-to-br from-purple-600 to-fuchsia-500 rounded-full shadow-lg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+              </div>
+              <span class="text-white font-black text-lg uppercase tracking-tighter">Abrir FF MAX</span>
+            </div>
+          </button>
+          <p class="text-[9px] text-slate-600 text-center mt-2 font-mono">Tentativa de abertura direta via Intent Android.</p>
+        </div>
+
+      </div>
+
+      <!-- INJECTION OVERLAY -->
+      <div id="injectionOverlay" class="absolute inset-0 bg-black z-50 rounded-[32px] p-6 flex flex-col hidden scanline-effect">
+        <div class="flex items-center gap-3 text-brand-400 mb-6 border-b border-slate-900 pb-4">
+          <svg class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <span class="font-bold uppercase tracking-widest text-sm">Injetando Scripts...</span>
+        </div>
+        <div id="logContainer" class="flex-1 overflow-y-auto space-y-2 font-mono text-xs text-slate-400 pb-20"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      isLoggedIn: false,
+      precision: { axisX: 100, axisY: 100, smooth: 50 },
+      touchSpeed: null,
+      functions: {},
+      optimizations: {}
+    };
+
+    function handleLogin() {
+      const input = document.getElementById('loginInput');
+      if (input.value === 'hs') {
+        state.isLoggedIn = true;
+        document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('mainApp').classList.remove('hidden');
+        }, 500);
+      } else {
+        input.classList.add('border-red-500');
+        setTimeout(() => input.classList.remove('border-red-500'), 500);
+        alert('Chave de acesso incorreta.');
+      }
+    }
+
+    document.getElementById('loginInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.id === `tab-${tabId}`) {
+          btn.className = "tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]";
+        } else {
+          btn.className = "tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700";
+        }
+      });
+      document.getElementById('content-auxilio').classList.add('hidden');
+      document.getElementById('content-otimizacao').classList.add('hidden');
+      document.getElementById(`content-${tabId}`).classList.remove('hidden');
+    }
+
+    function toggleSwitch(btn) {
+      const knob = btn.querySelector('.knob');
+      const isOn = btn.classList.contains('bg-brand-600');
+      if (isOn) {
+        btn.classList.remove('bg-brand-600', 'shadow-[0_0_10px_rgba(2,132,199,0.4)]');
+        btn.classList.add('bg-slate-700');
+        knob.classList.remove('translate-x-5', 'bg-white');
+        knob.classList.add('bg-slate-400');
+      } else {
+        btn.classList.remove('bg-slate-700');
+        btn.classList.add('bg-brand-600', 'shadow-[0_0_10px_rgba(2,132,199,0.4)]');
+        knob.classList.remove('bg-slate-400');
+        knob.classList.add('translate-x-5', 'bg-white');
+      }
+    }
+
+    function toggleTouchPremium(btn) {
+      const isOn = btn.classList.contains('bg-brand-600');
+      const options = document.getElementById('touchSpeedOptions');
+      toggleSwitch(btn);
+      if (isOn) {
+        options.classList.add('hidden');
+        state.touchSpeed = null;
+        document.querySelectorAll('.speed-option').forEach(opt => {
+          opt.classList.remove('border-brand-500', 'bg-brand-900/20');
+          opt.classList.add('border-slate-800', 'bg-slate-900/50');
+        });
+      } else {
+        options.classList.remove('hidden');
+      }
+    }
+
+    function selectTouchSpeed(speed, el) {
+      state.touchSpeed = speed;
+      document.querySelectorAll('.speed-option').forEach(opt => {
+        opt.classList.remove('border-brand-500', 'bg-brand-900/20');
+        opt.classList.add('border-slate-800', 'bg-slate-900/50');
+      });
+      el.classList.remove('border-slate-800', 'bg-slate-900/50');
+      el.classList.add('border-brand-500', 'bg-brand-900/20');
+    }
+
+    /**
+     * MÉTODO DE ABERTURA VIA IFRAME OCULTO + LOCATION
+     *
+     * Em ambientes PWA, WebView e navegadores mobile modernos,
+     * window.location.href com intent:// é frequentemente bloqueado
+     * por políticas de segurança quando disparado dentro de setTimeout.
+     *
+     * A solução mais robusta é criar um iframe dinâmico que tenta
+     * carregar o scheme customizado primeiro, seguido pelo location
+     * como backup imediato. Isso contorna diversas restrições de
+     * contexto de navegação segura.
+     */
+    function startInjection(gameVersion) {
+      const overlay = document.getElementById('injectionOverlay');
+      const logContainer = document.getElementById('logContainer');
+
+      overlay.classList.remove('hidden');
+      logContainer.innerHTML = '';
+
+      const speedLabel = state.touchSpeed ? state.touchSpeed.toUpperCase() : 'PADRÃO';
+      const gameName = gameVersion === 'max' ? 'Free Fire MAX' : 'Free Fire';
+
+      const logs = [
+        `Inicializando Engine Smooth v5.0...`,
+        `Calibrando sensibilidade Eixo X/Y no MÁXIMO... [OK]`,
+        `Aplicando precisão absoluta para todas as armas... [OK]`,
+        `Configurando mira para curta, média e longa distância... [OK]`,
+        `Eliminando espalhamento de balas... [OK]`,
+        `Ativando gráficos saturados e nitidez máxima... [OK]`,
+        `Velocidade do Touch Premium: ${speedLabel}... [APLICADO]`,
+        `Limpando RAM e otimizando cache... [OK]`,
+        `Estabilizando FPS e reduzindo input lag... [OK]`,
+        `Bypass Anti-Cheat System... [SUCCESS]`,
+        `Injetando scripts de Full HS... [OK]`,
+        `Finalizando processos...`,
+        `Injeção concluída! Tentando abrir ${gameName}...`
+      ];
+
+      let delay = 0;
+      logs.forEach((log, index) => {
+        delay += Math.random() * 400 + 300;
+        setTimeout(() => {
+          const line = document.createElement('div');
+          line.className = "flex gap-3 animate-fade-up";
+          line.innerHTML = `<span class="text-brand-600 font-bold">[${(index+1).toString().padStart(2, '0')}]</span> <span>${log}</span>`;
+          logContainer.appendChild(line);
+          logContainer.scrollTop = logContainer.scrollHeight;
+
+          if (index === logs.length - 1) {
+            setTimeout(() => {
+              const pkg = gameVersion === 'max' ? 'com.dts.freefiremax' : 'com.dts.freefireth';
+
+              const successLine = document.createElement('div');
+              successLine.className = "mt-4 text-green-400 font-bold text-center border-t border-slate-800 pt-4 text-xs";
+              successLine.innerText = "INJEÇÃO CONCLUÍDA. ABRINDO JOGO...";
+              logContainer.appendChild(successLine);
+
+              // 1. Tenta via iframe oculto (funciona melhor em PWAs/Chrome Android)
+              const iframe = document.createElement('iframe');
+              iframe.style.display = 'none';
+              iframe.src = 'freefire://';
+              document.body.appendChild(iframe);
+
+              // 2. Após 500ms, tenta via location com intent completo
+              setTimeout(() => {
+                window.location.href = `intent://#Intent;scheme=freefire;package=${pkg};action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url=;end`;
+              }, 500);
+
+              // 3. Limpa o iframe e esconde o overlay após tempo suficiente
+              setTimeout(() => {
+                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                overlay.classList.add('hidden');
+              }, 3000);
+
+            }, 1000);
+          }
+        }, delay);
+      });
+    }
+  </script>
+</body>
+</html>
